@@ -104,7 +104,7 @@ On Windows, this mode opts the canvas in to being affected the SDR slider.
 
 This mode specifies a mapping from canvas color spaces to specific nit values.
 
-PQ encoded images specify a number of nits for each pixel, and this allows hat specification to be respected.
+PQ encoded images specify a number of nits for each pixel, and this allows that specification to be respected.
 A PQ image drawn to a canvas that is composited in this mode will appear the same as that image when drawn by an ``'img'`` element on the page.
 
 #### Assigning pixel values to nits specified by PQ signals
@@ -150,7 +150,7 @@ When a canvas with color space ``'rec2020-linear'`` is composited in this mode, 
 
 This mode specifies a mechanism through which a specific range of pixel values will be mapped to the full luminance range of the display device.
 
-HLG encoded images specify color values in a way that is to be mapped to the entire available luminance range of the display device using the HLG inverse-EOTF and OOTF.
+HLG encoded images specify color values in a way that is to be mapped to the entire available luminance range of the display device using the HLG inverse-OETF and OOTF.
 This mode applies this OOTF mapping to the canvas color spaces.
 An HLG image drawn to a canvas that is composited in this mode will appear the same as that image when drawn by an ``'img'`` element on the page.
 
@@ -161,7 +161,7 @@ This is an abbreviated summary of [PQ to HLG Transcoding](https://www.bbc.co.uk/
 
 Transforming from HLG signal to raw luminance has three steps.
 
-The first step is to convert from the HLG signal into scene light. This is done by the inverse-EOTF function.
+The first step is to convert from the HLG signal into scene light. This is done by the inverse-OETF function.
 The function's domain is [0, 1], and its range is normalized to [0, 1] (with 0.5 mapping to 1/12).
 This step is independent of the output display.
 
@@ -177,7 +177,7 @@ The application can query these values by a number of mechanisms, and so they ca
 
 The two-step process for displaying HLG signals suggests a solution to this problem, namely, that values written to the canvas should be interpreted as being in scene light.
 
-Our solution is that an HLG encoded signal will be converted to a linear color space by applying the normalized inverse-EOTF to the signal, resulting in light values in the range of [0, 1].
+Our solution is that an HLG encoded signal will be converted to a linear color space by applying the normalized inverse-OETF to the signal, resulting in light values in the range of [0, 1].
 
 #### Compositing behavior.
 
