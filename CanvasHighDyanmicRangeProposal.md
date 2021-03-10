@@ -5,6 +5,7 @@
 ### Use Cases
 
 There three main classes of HDR use cases that inform this proposal. The are:
+
 * To draw content that can precisely color-match existing SDR content, while allowing to take advantage of HDR headroom.
   * E.g, adding HDR to an existing SDR application.
   * E.g, using SDR HTML UI along with an HDR application, with guaranteed color matching.
@@ -18,6 +19,7 @@ There three main classes of HDR use cases that inform this proposal. The are:
 ### Constraints
 
 There exist the following constraints.
+
 * The precise maximum luminance of the output display is not known and not knowable.
   * The [CSS Media Queries Level 5 Specification](https://www.w3.org/TR/mediaqueries-5/#valdef-media-dynamic-range-high) allows the application to query the ``'dynamic-range'``. The resulting values are ``'standard'`` and ``'high'``.
   * The value changes over time.
@@ -31,6 +33,7 @@ There exist the following constraints.
 
 Given these constraints, it is impossible to construct a single way to display HDR content that is correct for all use cases.
 The solution that we propose is to:
+
 * Introduce new color spaces and precisions that are useful for HDR.
 * Introduce an HTMLCanvasElement method through which an HDR compositing mode may be specified.
   * We introduce three HDR compositing modes, matching the three main use cases.
@@ -47,7 +50,7 @@ The existing CanvasColorSpaceProposal has been narrowed down to supporting just 
 It no longer covers adding other color spaces, or changing buffer formats.
 
 This new proposal expands the set of supported color spaces to include:
-* ``'rec2020'``
+
 * ``'srgb-linear'``
 * ``'rec2020-linear'``
 
@@ -55,9 +58,8 @@ There exist well-defined invertible transforms between all of these spaces.
 The value (1,1,1) is a fixed point in all of those transforms (it means the same thing in all of these spaces).
 
 This proposal also includes adding 16-bit floating-point as a supported storage format for 2D Canvas.
-The exact mechanism is not yet defined (it will likely be in CanvasRenderingContext2DSettings or elsewhere) 
 
-Similarly, ImageData will also be updated to support 16-bit fixed-point and 32-bit floating-point.
+ImageData will also be updated to support 16-bit fixed-point and 32-bit floating-point.
 
 ## HDR Compositing Modes
 
@@ -65,7 +67,7 @@ In this section we go over the three HDR compositing modes that we propose to ma
 These are compositing modes, which means that their effects are visible to the user via the display device, but are not visible to the application itself.
 
 These compositing modes are independent of color space.
-To be emphatic about this: Given a fixed compositing mode, then the same content, represented in different color spaces, will always appear identical.
+To be emphatic about this: Given a fixed compositing mode, the same content, represented in different color spaces, will always appear identical.
 
 In this section, we will define how we will map PQ and HLG color spaces to our set of defined color spaces (we will describe the mapping from those spaces into ``'srgb-linear'``, in particular).
 
@@ -82,7 +84,7 @@ For example, the color ``color(srgb-linear 2 2 2)`` is exactly twice as bright a
 There is no limit on the maximum luminance that can be expressed by a pixel value in this mode.
 If no additional metadata is provided, then all pixels will be clamped to the display device's maximum luminance.
 
-To avoid aggressive clamping, metadata may be provided, 
+To avoid aggressive clamping, metadata may be provided,
 This metadata consists of the scene's maximum luminance, as a multiple of the SDR luminance.
 A combination of the browser, operating system, and display device are responsible for mapping the canvas' into the display's capabilities.
 
@@ -111,6 +113,7 @@ A PQ image drawn to a canvas that is composited in this mode will appear the sam
 
 In this mode, we assign a number of nits to colors.
 We have to do this in two places.
+
 * For input PQ images drawn to canvases, we have to map nits to color values.
 * For outputting canvases in this compositing mode, we have to map color values to nits.
 
@@ -126,7 +129,7 @@ Similar math may be done to determine values to write to the WebGL or WebGPU swa
 #### Metadata and tone mapping
 
 There is no limit on the maximum luminance that can be expressed by a pixel value in this mode.
-Note that even values greater than PQ's limit of 10,000 nits are possible (e.g, ``color(srgb-linear 100.01 100.01 100.01`` is representable, and maps to 10,001 nits).
+Note that even values greater than PQ's limit of 10,000 nits are possible (e.g, ``color(srgb-linear 100.01 100.01 100.01)`` is representable, and maps to 10,001 nits).
 If no additional metadata is provided, then, as in the previously described mode, out of range pixel values will be clamped.
 
 To avoid aggressive luminance clamping, the usual complement of HDR10 metadata may be provided (min luminance, max luminance, primaries, white point, CLL, and ALL).
@@ -157,7 +160,7 @@ An HLG image drawn to a canvas that is composited in this mode will appear the s
 #### Assigning nits to HLG signals
 
 Before discussing what we propose to do with canvas elements, we will first describe the recommended mechanism for displaying an HLG image on a display that uses raw luminance values as its signal, and has a specified maximum luminance.
-This is an abbreviated summary of [PQ to HLG Transcoding](https://www.bbc.co.uk/rd/sites/50335ff370b5c262af000004/assets/592eea8006d63e5e5200f90d/BBC_HDRTV_PQ_HLG_Transcode_v2.pdf)
+This is an abbreviated summary of [PQ to HLG Transcoding](https://www.bbc.co.uk/rd/sites/50335ff370b5c262af000004/assets/592eea8006d63e5e5200f90d/BBC_HDRTV_PQ_HLG_Transcode_v2.pdf).
 
 Transforming from HLG signal to raw luminance has three steps.
 
@@ -179,7 +182,7 @@ The two-step process for displaying HLG signals suggests a solution to this prob
 
 Our solution is that an HLG encoded signal will be converted to a linear color space by applying the normalized inverse-OETF to the signal, resulting in light values in the range of [0, 1].
 
-#### Compositing behavior.
+#### Compositing behavior
 
 In this compositing mode, the browser, operating system, and display device are then responsible for converting from scene light values to display light values, by applying the appropriately parameterized OOTF and final scaling.
 
@@ -193,6 +196,7 @@ This mode is suitable for use with display devices that are not capable of HDR o
 #### Remarks on choice of scene light space
 
 For displaying HLG content, there are three conventions for the domain of scene light space.
+
 * [0, 1] for normalized space scene light space.
 * [0, 12] for non-normalized scene light space.
 * Perhaps [0, 3.77] if one wanted SDR white to coincide with a signal value of 0.75 before applying the OOTF.
@@ -208,15 +212,16 @@ For completeness, there does exist one more HDR mode, the no-HDR HDR mode (which
 In this mode, ``'srgb-linear'`` pixel values are clamped to [0, 1].
 
 For HLG images, the behavior that falls out is for the OOTF to not be applied.
-The HLG OOTF is the identity function if the display maximum luminance is 334 nits.
-So, for HLG images, the behavior for non-HDR canvases will be to display them as though the target display were 334 nits.
+The HLG OOTF is the identity function if the display maximum luminance is 334 nits, so, for HLG images, the behavior for non-HDR canvases will be to display them as though the target display were 334 nits.
 The is the goal of HLG: To gracefully transition between SDR and HDR.
 
 For PQ images, the behavior that falls out is for the image to be clamped beyond 100 nits.
 
 ## Proposed API outline
 
-```
+To enable the configuration of HDR compositing.
+
+```idl
   partial interface HTMLCanvasElement {
     void configureHDR(HTMLCanvasCompositingMode mode, optional HTMLCanvasHDRMetadata metadata);
   }
@@ -226,8 +231,10 @@ For PQ images, the behavior that falls out is for the image to be clamped beyond
     'relative-luminance',
     'physical-luminance',
     'hybrid-log-gamma',
-  };
+  }
 
+  // TODO: This feels sloppy to have all HDR parameters be in a single
+  // dictionary.
   dictionary HTMLCanvasHDRMetadata {
     // Value specified in multiples of SDR white.
     // Used by 'relative-luminance' mode.
@@ -251,6 +258,44 @@ For PQ images, the behavior that falls out is for the image to be clamped beyond
   }
 ```
 
+To enable 2D Canvas to use more than 8 bits per pixel.
+
+```idl
+  enum CanvasStorageFormat {
+    "unorm8",
+    "float16", 
+  }
+
+  dictionary CanvasRenderingContext2DSettings {
+    CanvasStorageFormat storageFormat = "unorm8";
+  }
+```
+
+To expose additional color spaces.
+
+```idl
+  partial enum CanvasColorSpace {
+    "srgb-linear",
+    "rec2020-linear",
+  }
+```
+
+To enable ImageData to use more than 8 bits per pixel.
+
+```idl
+  enum ImageDataStorageFormat {
+    "unorm8",
+    "unorm16", 
+    "float32", 
+  }
+
+  typedef (Uint8ClampedArray or Uint16Array or Float32Array) ImageDataArray;
+  partial dictionary ImageDataSettings {
+    ImageDataStorageFormat storageFormat = "unorm8";
+    ImageDataArray data;
+  }
+```
+
 ## Example Applications
 
 ### Example Set 1: Application With HTML UI on top of a Canvas
@@ -259,7 +304,8 @@ In this example set we consider an application in which an HTML UI is used with 
 
 The beginning of these examples is the same.
 We have a canvas, and a green HTML element on top of it.
-```
+
+```xml
 <html>
 <body>
 <div style='position: relative; width: 500px; height: 500px;'>
@@ -287,7 +333,8 @@ In this example, the application wants color matching with the HTML UI.
 The most concrete example of this would be a situation where the application uses the HTML color picker element to select colors to use inside the canvas.
 
 In this case, the application will want to use the default mode of ``'relative-luminance'``.
-```
+
+```javascript
     canvas.configureHDR('relative-luminance');
 
     // This green will match the color in MyGreenUI.
@@ -299,7 +346,8 @@ In this case, the application will want to use the default mode of ``'relative-l
 #### Example 1B: Same as 1A, but using WebGL
 
 This is the same as the above example, but the application is using WebGL.
-```
+
+```javascript
     canvas.configureHDR('relative-luminance');
 
     // This green will match the color in MyGreenUI.
@@ -313,11 +361,13 @@ This is the same as the above example, but the application is using WebGL.
 
 In this example, the application does not want color matching with the HTML UI.
 The application views the HTML UI as being regular SDR content that is sitting on top of an HDR canvas.
+
 * The UI should be displayed however the underlying OS displays SDR content.
 * The HDR canvas should be displayed however the underlying OS displays HDR content.
 
 The application in this case will want ``'physical-luminance'``.
-```
+
+```javascript
     canvas.configureHDR('physical-luminance'});
 
     // This green will LIKELY NOT match the color in MyGreenUI.
@@ -343,7 +393,8 @@ In this example, there exists a helpful piece of UI that the application wants t
 That UI is being drawn by the canvas element.
 
 To draw the user's attention, the application pulses a doubling of the brightness of that part of the UI code.
-```
+
+```xml
   <html>
   <body>
   <canvas id='MyCanvas' width=500px height=500px
@@ -375,7 +426,8 @@ Consider an existing WebGL application with a lens flare effect.
 The lens flare is currently an 8-bit texture, but the application wants to have it actually be HDR, without changing any of the rest of application.
 
 Here is an outline of the previously existing application code. An existing HTMLCanvasElement, ``canvas`` is assumed to exist.
-```
+
+```javascript
     var gl = canvas.getContext('webgl2');
 
     var myLensFlareData = new Uint8ClampedArray(4 * 256 * 256);
@@ -392,7 +444,8 @@ Here is an outline of the previously existing application code. An existing HTML
 
 It is possible to enable just this one HDR texture, with minimal changes to the existing application.
 The comments in this code show the changes that are needed.
-```
+
+```javascript
     // Enable HDR for the canvas. Use the default mode of 'relative-luminance',
     // because that will match the existing application behavior.
     canvas.configureHDR('relative-luminance');
@@ -423,7 +476,7 @@ The comments in this code show the changes that are needed.
   }
 ```
 
-### Example Set 3: Displaying a PQ image inside a Canvas element.
+### Example Set 3: Displaying a PQ image inside a Canvas element
 
 In this set of examples we assume the existence of a PQ-encoded image.
 Because the image is encoded in PQ, which is physical luminance, we will want the canvas to be interpreted as being in physical luminance.
@@ -433,7 +486,7 @@ Because the image is encoded in PQ, which is physical luminance, we will want th
 In this example, we use a 2D Canvas to display a PQ image.
 The nits specified by PQ image will match the nits displayed on the screen, as much as is allowed by the underlying operating system and the physical display.
 
-```
+```xml
   <html>
   <body>
   <canvas id='MyCanvas' width=2048px height=858px
@@ -457,9 +510,11 @@ The nits specified by PQ image will match the nits displayed on the screen, as m
 #### Example 3B: Displaying a PQ image in a 2D Canvas NOT as intended
 
 In this example, we make a mistake, and use ``'relative-luminance'`` in the above exmple.
-```
+
+```javascript
   canvas.configureHDR('relative-luminance'});
 ```
+
 What happens?
 
 On Windows, the result will be that the image will be affected by the SDR slider.
@@ -467,13 +522,14 @@ This means that it will likely be brighter than is intended by the content autho
 
 On macOS, the result will likely be indistinguishable.
 
-#### Example 3C: Displaying a PQ image with a subtitle.
+#### Example 3C: Displaying a PQ image with a subtitle
 
 This example builds on example 3A, but adds a subtitle text to the image.
 
 First consider the following code, where the subtitle specifies its color as being sRGB white.
 In this case, the subtitle will appear as 100 nits.
-```
+
+```javascript
   image.onload = function() {
     context.drawImage(image, 0, 0, 2048, 858);
     context.font = "128px Arial";
@@ -488,7 +544,8 @@ Suppose the application does not want 100 nit subtitles, but would prefer 300 ni
 The easiest way to specify this would be to use CSS Color Level 4 syntax, in the ``srgb-linear`` color space.
 In that space, the color values may be interpreted as hundreds of nits (or hectonits).
 In that way, 300 nits would be represented by the style ``'color(srgb-linear 3 3 3)'`` as follows.
-```
+
+```javascript
     context.font = "128px Arial";
     context.fillStyle = 'color(srgb-linear 3 3 3)';
     context.fillText('Hello, I am a subtitle!', 400, 800);
@@ -498,7 +555,8 @@ In that way, 300 nits would be represented by the style ``'color(srgb-linear 3 3
 
 Alternatively, the application could use a brightness filter to achieve a different nit level for SDR content.
 In this example, the application selects 80 nits for its subtitle.
-```
+
+```javascript
   image.onload = function() {
     context.drawImage(image, 0, 0, 2048, 858);
     context.filter = 'brightness(0.8)';
@@ -508,7 +566,7 @@ In this example, the application selects 80 nits for its subtitle.
   }
 ```
 
-### Example Set 4: Displaying an HLG image inside a Canvas element.
+### Example Set 4: Displaying an HLG image inside a Canvas element
 
 In this set of examples we assume the existence of a HLG-encoded image.
 We expect this HLG-encoded image to be displayed in a way that takes advantage of the full luminance of the display device.
@@ -518,7 +576,7 @@ We expect this HLG-encoded image to be displayed in a way that takes advantage o
 In this example, we use a 2D Canvas to display a HLG image.
 We set the canvas to use the appropriate compositing mode.
 
-```
+```xml
   <html>
   <body>
   <canvas id='MyCanvas' width=2048px height=858px
@@ -542,20 +600,23 @@ We set the canvas to use the appropriate compositing mode.
 #### Example 4B: Displaying an HLG image in a 2D Canvas NOT as intended
 
 In this example, we make a mistake, and use ``'relative-luminance'`` in the above exmple.
-```
+
+```javascript
   canvas.configureHDR('relative-luminance'});
 ```
+
 What happens?
 
 The HLG image will be limited to the SDR range (and will be drawn as though on a 334-nit SDR device).
 
-#### Example 4C: Displaying an HLG image with a subtitle.
+#### Example 4C: Displaying an HLG image with a subtitle
 
 This example builds on example 3A, but adds a subtitle text to the image.
 
 First consider the following code, where the subtitle specifies its color as being sRGB white.
 In this case, the subtitle will appear as maxmum brightness.
-```
+
+```javascript
   image.onload = function() {
     context.drawImage(image, 0, 0, 2048, 858);
     context.font = "128px Arial";
@@ -566,6 +627,8 @@ In this case, the subtitle will appear as maxmum brightness.
 
 It is a convention in HLG to use a signal value of 0.75 as diffuse wwhite.
 To accomplish this, we would convert HLG's 0.75 to a CSS color value.
-```
+
+```javascript
   context.fillStyle = 'color(srgb-linear 0.265  0.265 0.265)';
 ```
+
