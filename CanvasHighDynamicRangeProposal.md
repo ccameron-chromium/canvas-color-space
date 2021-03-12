@@ -4,7 +4,7 @@
 
 ### Use Cases
 
-There three main classes of HDR use cases that inform this proposal. The are:
+There are three main classes of HDR use cases that inform this proposal. They are:
 
 * To draw content that can precisely color-match existing SDR content, while allowing to take advantage of HDR headroom.
   * E.g, adding HDR to an existing SDR application.
@@ -100,7 +100,7 @@ When a canvas with the color space ``'rec2020-linear'`` is composited in this mo
 
 #### Remarks on operating system interaction
 
-On Windows, this mode opts the canvas in to being affected the SDR slider.
+On Windows, this mode opts the canvas in to being affected by the SDR slider.
 
 ### Mode 2: Physical Luminance (for displaying PQ content)
 
@@ -117,7 +117,7 @@ We have to do this in two places.
 * For input PQ images drawn to canvases, we have to map nits to color values.
 * For outputting canvases in this compositing mode, we have to map color values to nits.
 
-We choose to assign a the same mapping for both of these, so that simply drawing a PQ image to a canvas that is composited in this mode will behave as expected.
+We choose to assign the same mapping for both of these, so that simply drawing a PQ image to a canvas that is composited in this mode will behave as expected.
 The alternative would be to allow the user to parameterize the output mode (that is easy to add to an API), or the input mode (which would be harder, perhaps through ImageBitmap). This approach only adds foot-guns, in our opinion. And, if the foot-guns prove to be worth it, they can be added later.
 
 The mapping we decide is that the color ``color(srgb 1 1 1)`` is to map to 100 nits.
@@ -238,23 +238,23 @@ To enable the configuration of HDR compositing.
   dictionary HTMLCanvasHDRMetadata {
     // Value specified in multiples of SDR white.
     // Used by 'relative-luminance' mode.
-    float? maxRelativeLuminance;
+    float maxRelativeLuminance;
 
     // Values specified in nits.
     // Used by 'physical-luminance' mode.
-    float? maxPhysicalLuminance;
-    float? minPhysicalLuminance;
+    float maxPhysicalLuminance;
+    float minPhysicalLuminance;
 
     // Values specified in CIE1931.
     // Used by 'physical-luminance' mode.
-    float? redPrimaryX;
-    float? redPrimaryY;
-    float? greenPrimaryX;
-    float? greenPrimaryY;
-    float? bluePrimaryX;
-    float? bluePrimaryY;
-    float? whitePointX;
-    float? whitePointY;
+    float redPrimaryX;
+    float redPrimaryY;
+    float greenPrimaryX;
+    float greenPrimaryY;
+    float bluePrimaryX;
+    float bluePrimaryY;
+    float whitePointX;
+    float whitePointY;
   }
 ```
 
@@ -266,7 +266,7 @@ To enable 2D Canvas to use more than 8 bits per pixel.
     "float16", 
   }
 
-  dictionary CanvasRenderingContext2DSettings {
+  partial dictionary CanvasRenderingContext2DSettings {
     CanvasStorageFormat storageFormat = "unorm8";
   }
 ```
